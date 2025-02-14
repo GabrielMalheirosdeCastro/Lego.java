@@ -1,9 +1,13 @@
 package com.mycompany.lego.java;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class UsoLego {
-    private static final LegoJava[] listaLegos = new LegoJava[10];
+    private static final List<LegoJava> listaLegos = new ArrayList<>();
+    private static final String[] CATEGORIAS = {"Cidade", "Tecnico", "Minecraft", "Star Wars", "Super Herois"};
+    private static final String[] CORES = {"Vermelho", "Azul", "Verde", "Amarelo", "Preto", "Branco"};
 
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
@@ -14,11 +18,21 @@ public class UsoLego {
                 opcao = lerInteiro(scanner, "Opção");
                 
                 switch (opcao) {
-                    case 0 -> System.out.println("Saindo...");
-                    case 1 -> adicionarLego(scanner);
-                    case 2 -> listarLegos();
-                    case 3 -> ordenarLegos();
-                    default -> System.out.println("Opção inválida! Tente novamente.");
+                    case 0:
+                        System.out.println("Saindo...");
+                        break;
+                    case 1:
+                        adicionarLego(scanner);
+                        break;
+                    case 2:
+                        listarLegos();
+                        break;
+                    case 3:
+                        ordenarLegos();
+                        break;
+                    default:
+                        System.out.println("Opção inválida! Tente novamente.");
+                        break;
                 }
             }
         }
@@ -34,120 +48,86 @@ public class UsoLego {
 
     private static void adicionarLego(Scanner scanner) {
         try {
+            // Primeiro pede e valida a categoria
+            System.out.println("\nCategorias disponíveis:");
+            for (int i = 0; i < CATEGORIAS.length; i++) {
+                System.out.println((i + 1) + " - " + CATEGORIAS[i]);
+            }
+            System.out.print("Escolha a categoria (1-" + CATEGORIAS.length + "): ");
+            int categoriaIndex = lerInteiroEntre(scanner, "categoria", 1, CATEGORIAS.length) - 1;
+            String categoria = CATEGORIAS[categoriaIndex];
+
+            // Verifica duplicidade antes de continuar
+            if (verificarDuplicidade(categoria)) {
+                System.out.println("Erro: Já existe um Lego cadastrado para a categoria " + categoria);
+                return;
+            }
+
+            // Pede o tipo de Lego
             System.out.print("\nDigite o tipo de Lego (1 para Grande, 2 para Pequeno): ");
-            int tipo = lerInteiro(scanner, "tipo");
+            int tipo = lerInteiroEntre(scanner, "tipo", 1, 2);
 
-            System.out.print("Digite a categoria: ");
-            int categoria = lerInteiroPositivo(scanner, "categoria");
-
-            System.out.print("Digite o comprimento: ");
+            // Pede as dimensões
+            System.out.print("Digite o comprimento (deve ser positivo): ");
             int comprimento = lerInteiroPositivo(scanner, "comprimento");
 
-            System.out.print("Digite a largura: ");
+            System.out.print("Digite a largura (deve ser positiva): ");
             int largura = lerInteiroPositivo(scanner, "largura");
 
-            if (verificarDuplicidade(categoria)) {
-                System.out.println("Erro: Já existe um Lego com esta categoria.");
-                return;
+            // Pede a quantidade de cores
+            System.out.println("\nCores disponíveis:");
+            for (int i = 0; i < CORES.length; i++) {
+                System.out.println((i + 1) + " - " + CORES[i]);
             }
+            System.out.print("Escolha a quantidade de cores (1-" + CORES.length + "): ");
+            int quantidadeCores = lerInteiroEntre(scanner, "quantidade de cores", 1, CORES.length);
 
             switch (tipo) {
-                case 1 -> {
-                    System.out.print("Digite o nome do Lego Grande: ");
-                    String nome = lerString(scanner);
-                    System.out.print("Digite o número de conectores: ");
-                    int conectores = lerInteiroPositivo(scanner, "número de conectores");
-                    System.out.print("Digite a quantidade de cores: ");
-                    int quantidadeDeCores = lerInteiroPositivo(scanner, "quantidade de cores");
-                    
-                    LegoGrande legoGrande = new LegoGrande(categoria, comprimento, largura, nome, conectores, quantidadeDeCores);
-                    adicionarLegoNaLista(legoGrande);
-                }
-                case 2 -> {
-                    System.out.print("Digite o encaixe do Lego Pequeno: ");
-                    String encaixes = lerString(scanner);
-                    System.out.print("Digite o número de conectores: ");
-                    int conectores = lerInteiroPositivo(scanner, "número de conectores");
-                    System.out.print("Digite a quantidade de cores: ");
-                    int quantidadeDeCores = lerInteiroPositivo(scanner, "quantidade de cores");
-
-                    LegoPequeno legoPequeno = new LegoPequeno(categoria, comprimento, largura, encaixes, conectores, quantidadeDeCores);
-                    adicionarLegoNaLista(legoPequeno);
-                }
-                default -> System.out.println("Tipo de Lego inválido.");
+                case 1:
+                    cadastrarLegoGrande(scanner, categoriaIndex, comprimento, largura, quantidadeCores);
+                    break;
+                case 2:
+                    cadastrarLegoPequeno(scanner, categoriaIndex, comprimento, largura, quantidadeCores);
+                    break;
+                default:
+                    System.out.println("Tipo de Lego inválido.");
+                    break;
             }
+        } catch (NumberFormatException e) {
+            System.out.println("Erro: Digite apenas números válidos!");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro de validação: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Erro ao adicionar Lego: " + e.getMessage());
+            System.out.println("Erro inesperado ao adicionar Lego: " + e.getMessage());
         }
     }
 
-    private static boolean verificarDuplicidade(int categoria) {
-        for (LegoJava lego : listaLegos) {
-            if (lego != null && lego.getCategoria() == categoria) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void adicionarLegoNaLista(LegoJava lego) {
-        for (int i = 0; i < listaLegos.length; i++) {
-            if (listaLegos[i] == null) {
-                listaLegos[i] = lego;
-                System.out.println("Lego adicionado com sucesso!");
-                return;
-            }
-        }
-        System.out.println("Erro: Não há espaço para adicionar mais Legos.");
-    }
-
-    private static void listarLegos() {
-        boolean vazio = true;
-        for (LegoJava lego : listaLegos) {
-            if (lego != null) {
-                System.out.println(lego.cadastrar());
-                vazio = false;
-            }
-        }
-        if (vazio) {
-            System.out.println("Nenhum Lego cadastrado.");
-        }
-    }
-
-    private static void ordenarLegos() {
-        // Conta quantos Legos existem
-        int count = 0;
-        for (LegoJava lego : listaLegos) {
-            if (lego != null) count++;
-        }
+    private static void cadastrarLegoGrande(Scanner scanner, int categoriaIndex, int comprimento, int largura, int quantidadeCores) {
+        System.out.print("Digite o nome do Lego Grande: ");
+        String nome = lerString(scanner);
+        System.out.print("Digite o número de conectores (deve ser positivo): ");
+        int conectores = lerInteiroPositivo(scanner, "número de conectores");
         
-        if (count == 0) {
-            System.out.println("Não há Legos para ordenar.");
-            return;
-        }
-
-        // Ordenação apenas dos elementos não nulos
-        for (int i = 0; i < count - 1; i++) {
-            for (int j = 0; j < count - i - 1; j++) {
-                if (listaLegos[j] != null && listaLegos[j + 1] != null && 
-                    listaLegos[j].getCategoria() > listaLegos[j + 1].getCategoria()) {
-                    LegoJava temp = listaLegos[j];
-                    listaLegos[j] = listaLegos[j + 1];
-                    listaLegos[j + 1] = temp;
-                }
-            }
-        }
-        System.out.println("Legos ordenados por categoria.");
+        LegoGrande legoGrande = new LegoGrande(categoriaIndex + 1, comprimento, largura, nome, conectores, quantidadeCores);
+        adicionarLegoNaLista(legoGrande);
     }
 
-    // Métodos auxiliares para validação de entrada
+    private static void cadastrarLegoPequeno(Scanner scanner, int categoriaIndex, int comprimento, int largura, int quantidadeCores) {
+        System.out.print("Digite o encaixe do Lego Pequeno: ");
+        String encaixes = lerString(scanner);
+        System.out.print("Digite o número de conectores (deve ser positivo): ");
+        int conectoresPequeno = lerInteiroPositivo(scanner, "número de conectores");
+
+        LegoPequeno legoPequeno = new LegoPequeno(categoriaIndex + 1, comprimento, largura, encaixes, conectoresPequeno, quantidadeCores);
+        adicionarLegoNaLista(legoPequeno);
+    }
+
     private static int lerInteiro(Scanner scanner, String campo) {
         while (true) {
             try {
-                return scanner.nextInt();
-            } catch (Exception e) {
+                return Integer.parseInt(scanner.nextLine().trim());
+            } catch (NumberFormatException e) {
                 System.out.println("Por favor, digite um número válido para " + campo);
-                scanner.nextLine(); // Limpa o buffer
             }
         }
     }
@@ -162,13 +142,54 @@ public class UsoLego {
         }
     }
 
+    private static int lerInteiroEntre(Scanner scanner, String campo, int min, int max) {
+        while (true) {
+            int valor = lerInteiro(scanner, campo);
+            if (valor >= min && valor <= max) {
+                return valor;
+            }
+            System.out.printf("Por favor, digite um número entre %d e %d para %s%n", min, max, campo);
+        }
+    }
+
     private static String lerString(Scanner scanner) {
-        scanner.nextLine(); // Limpa o buffer
         String valor = scanner.nextLine().trim();
         while (valor.isEmpty()) {
             System.out.println("O valor não pode estar vazio. Digite novamente:");
             valor = scanner.nextLine().trim();
         }
         return valor;
+    }
+
+    private static void adicionarLegoNaLista(LegoJava lego) {
+        listaLegos.add(lego);
+        System.out.println("Lego adicionado com sucesso!");
+    }
+
+    private static boolean verificarDuplicidade(String categoria) {
+        return listaLegos.stream()
+                .anyMatch(lego -> CATEGORIAS[lego.getCategoria() - 1].equals(categoria));
+    }
+
+    private static void listarLegos() {
+        if (listaLegos.isEmpty()) {
+            System.out.println("Nenhum Lego cadastrado.");
+            return;
+        }
+
+        for (LegoJava lego : listaLegos) {
+            String categoriaNome = CATEGORIAS[lego.getCategoria() - 1];
+            System.out.println("Categoria: " + categoriaNome + " - " + lego.cadastrar());
+        }
+    }
+
+    private static void ordenarLegos() {
+        if (listaLegos.isEmpty()) {
+            System.out.println("Não há Legos para ordenar.");
+            return;
+        }
+
+        listaLegos.sort((a, b) -> a.getCategoria() - b.getCategoria());
+        System.out.println("Legos ordenados por categoria.");
     }
 }
