@@ -5,13 +5,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  *
  * @author 
  */
 public class legoProjeto {
-    private final List<LegoJava> listaLegos;
+    private final List<LegoJava> listaLegos = new ArrayList<>(); // Inicialização direta
     private List<String> categorias;
     private Map<String, Color> cores; // Alterado para um mapa que associa nome da cor ao objeto Color
     
@@ -19,8 +26,9 @@ public class legoProjeto {
     private static final String[] NOMES_CORES_PADRAO = {"Vermelho", "Azul", "Verde", "Amarelo", "Preto", "Branco"};
     private static final Color[] CORES_PADRAO = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.BLACK, Color.WHITE};
     
+    private static final String ARQUIVO_JSON = "legos.json";
+
     public legoProjeto() {
-        this.listaLegos = new ArrayList<>();
         // Inicializa com uma lista vazia de categorias para que o usuário possa cadastrar as suas próprias
         this.categorias = new ArrayList<>();
         
@@ -65,11 +73,11 @@ public class legoProjeto {
     }
     
     public void adicionarLego(LegoJava lego) {
-        listaLegos.add(lego);
+        listaLegos.add(lego); // Certifique-se de que este método está sendo usado corretamente
     }
     
     public List<LegoJava> getListaLegos() {
-        return listaLegos;
+        return listaLegos; // Certifique-se de que este método está sendo chamado corretamente
     }
     
     public void ordenarLegos() {
@@ -83,7 +91,7 @@ public class legoProjeto {
     }
     
     public boolean listaVazia() {
-        return listaLegos.isEmpty();
+        return listaLegos.isEmpty(); // Verifique se este método está sendo chamado corretamente
     }
     
     // Métodos para gerenciar categorias
@@ -194,5 +202,41 @@ public class legoProjeto {
                 }
             }
         }
+    }
+
+    public void salvarDados() {
+        Gson gson = new Gson();
+        try (FileWriter writer = new FileWriter(ARQUIVO_JSON)) {
+            gson.toJson(this, writer);
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar dados: " + e.getMessage());
+        }
+    }
+
+    public static legoProjeto carregarDados() {
+        Gson gson = new Gson();
+        File arquivo = new File(ARQUIVO_JSON);
+        if (arquivo.exists()) {
+            try (FileReader reader = new FileReader(arquivo)) {
+                Type tipoProjeto = new TypeToken<legoProjeto>() {}.getType();
+                legoProjeto projeto = gson.fromJson(reader, tipoProjeto);
+
+                // Inicializa atributos que podem estar null
+                if (projeto.listaLegos == null) {
+                    projeto.listaLegos = new ArrayList<>();
+                }
+                if (projeto.categorias == null) {
+                    projeto.categorias = new ArrayList<>();
+                }
+                if (projeto.cores == null) {
+                    projeto.cores = new HashMap<>();
+                }
+
+                return projeto;
+            } catch (IOException e) {
+                System.err.println("Erro ao carregar dados: " + e.getMessage());
+            }
+        }
+        return new legoProjeto(); // Retorna um novo projeto caso o arquivo não exista ou ocorra erro
     }
 }

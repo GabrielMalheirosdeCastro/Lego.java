@@ -21,9 +21,16 @@ public class UsoLego {
             System.out.println("Erro ao definir aparência: " + e.getMessage());
         }
         
+        legoProjeto projeto = legoProjeto.carregarDados();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            projeto.salvarDados();
+            System.out.println("Dados salvos com sucesso!");
+        }));
+
         // Inicia a interface gráfica na thread de eventos do Swing
         SwingUtilities.invokeLater(() -> {
-            legoTela tela = new legoTela();
+            legoTela tela = new legoTela(projeto); // Passa o projeto carregado
             tela.iniciar();
         });
     }

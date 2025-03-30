@@ -56,8 +56,8 @@ public class legoTela extends JFrame {
     private JPanel painelEntrada;
     private GridBagConstraints gbc;
     
-    public legoTela() {
-        this.projeto = new legoProjeto();
+    public legoTela(legoProjeto projeto) {
+        this.projeto = projeto;
         inicializarComponentes();
     }
     
