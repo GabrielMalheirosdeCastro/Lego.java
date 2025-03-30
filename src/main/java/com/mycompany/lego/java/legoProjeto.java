@@ -1,17 +1,18 @@
 package com.mycompany.lego.java;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  *
@@ -40,15 +41,15 @@ public class legoProjeto {
     }
     
     public String[] getCategorias() {
-        return categorias.toArray(new String[0]);
+        return categorias.toArray(String[]::new);
     }
     
     public String[] getNomesCores() {
-        return cores.keySet().toArray(new String[0]);
+        return cores.keySet().toArray(String[]::new);
     }
     
     public Color[] getCores() {
-        return cores.values().toArray(new Color[0]);
+        return cores.values().toArray(Color[]::new);
     }
     
     public Map<String, Color> getMapaCores() {
@@ -132,10 +133,10 @@ public class legoProjeto {
         // Verifica se a cor está em uso
         boolean corEmUso = listaLegos.stream()
                 .anyMatch(lego -> {
-                    if (lego instanceof LegoGrande) {
+                    if (lego instanceof LegoGrande legoGrande) {
                         return ((LegoGrande) lego).getCorNome() != null && 
                                ((LegoGrande) lego).getCorNome().equals(nome);
-                    } else if (lego instanceof LegoPequeno) {
+                    } else if (lego instanceof LegoPequeno legoPequeno) {
                         return ((LegoPequeno) lego).getCorNome() != null && 
                                ((LegoPequeno) lego).getCorNome().equals(nome);
                     }
@@ -159,10 +160,10 @@ public class legoProjeto {
             // Verifica se a cor está em uso
             boolean corEmUso = listaLegos.stream()
                 .anyMatch(lego -> {
-                    if (lego instanceof LegoGrande) {
+                    if (lego instanceof LegoGrande legoGrande) {
                         return ((LegoGrande) lego).getCorNome() != null && 
                                ((LegoGrande) lego).getCorNome().equals(nomeAntigo);
-                    } else if (lego instanceof LegoPequeno) {
+                    } else if (lego instanceof LegoPequeno legoPequeno) {
                         return ((LegoPequeno) lego).getCorNome() != null && 
                                ((LegoPequeno) lego).getCorNome().equals(nomeAntigo);
                     }
@@ -190,13 +191,11 @@ public class legoProjeto {
     // Método para atualizar a cor em legos existentes (quando a cor é editada)
     private void atualizarCorEmLegos(String nomeCor, Color novaCor) {
         for (LegoJava lego : listaLegos) {
-            if (lego instanceof LegoGrande) {
-                LegoGrande legoGrande = (LegoGrande) lego;
+            if (lego instanceof LegoGrande legoGrande) {
                 if (nomeCor.equals(legoGrande.getCorNome())) {
                     legoGrande.setCor(novaCor);
                 }
-            } else if (lego instanceof LegoPequeno) {
-                LegoPequeno legoPequeno = (LegoPequeno) lego;
+            } else if (lego instanceof LegoPequeno legoPequeno) {
                 if (nomeCor.equals(legoPequeno.getCorNome())) {
                     legoPequeno.setCor(novaCor);
                 }
@@ -216,27 +215,39 @@ public class legoProjeto {
     public static legoProjeto carregarDados() {
         Gson gson = new Gson();
         File arquivo = new File(ARQUIVO_JSON);
+        
         if (arquivo.exists()) {
             try (FileReader reader = new FileReader(arquivo)) {
                 Type tipoProjeto = new TypeToken<legoProjeto>() {}.getType();
                 legoProjeto projeto = gson.fromJson(reader, tipoProjeto);
-
-                // Inicializa atributos que podem estar null
-                if (projeto.listaLegos == null) {
-                    projeto.listaLegos = new ArrayList<>();
+                
+                if (projeto == null) {
+                    // Se a desserialização retornar null, cria um novo projeto
+                    return new legoProjeto();
                 }
+                
+                // Inicializa os atributos que podem estar null após desserialização
                 if (projeto.categorias == null) {
                     projeto.categorias = new ArrayList<>();
                 }
+                
                 if (projeto.cores == null) {
                     projeto.cores = new HashMap<>();
+                    // Adiciona as cores padrão
+                    for (int i = 0; i < NOMES_CORES_PADRAO.length; i++) {
+                        projeto.cores.put(NOMES_CORES_PADRAO[i], CORES_PADRAO[i]);
+                    }
                 }
-
+                
                 return projeto;
             } catch (IOException e) {
                 System.err.println("Erro ao carregar dados: " + e.getMessage());
+                e.printStackTrace();
+                return new legoProjeto(); // Retorna um novo projeto em caso de erro
             }
         }
-        return new legoProjeto(); // Retorna um novo projeto caso o arquivo não exista ou ocorra erro
+        
+        // Se o arquivo não existe, retorna um novo projeto
+        return new legoProjeto();
     }
 }
