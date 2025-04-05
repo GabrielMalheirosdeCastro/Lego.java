@@ -1,0 +1,121 @@
+{
+  "categorias": [
+    "Parede",
+    "Rampa",
+    "Telhado",
+    "Janela",
+    "Impressão",
+    "Parabrisa"
+  ],
+  "coresNomes": [
+    "Violeta",
+    "Preto",
+    "Aqua",
+    "Vermelho escuro",
+    "Vermelho",
+    "Amarelo",
+    "Branco",
+    "Azul",
+    "Verde"
+  ],
+  "coresRGB": [
+    [
+      204,
+      0,
+      204,
+      255
+    ],
+    [
+      0,
+      0,
+      0,
+      255
+    ],
+    [
+      0,
+      255,
+      255,
+      255
+    ],
+    [
+      153,
+      0,
+      0,
+      255
+    ],
+    [
+      255,
+      0,
+      0,
+      255
+    ],
+    [
+      255,
+      255,
+      0,
+      255
+    ],
+    [
+      255,
+      255,
+      255,
+      255
+    ],
+    [
+      0,
+      0,
+      255,
+      255
+    ],
+    [
+      0,
+      255,
+      0,
+      255
+    ]
+  ],
+  "legosGrandes": [
+    {
+      "categoria": 1,
+      "comprimento": 12,
+      "largura": 10,
+      "nome": "Porta",
+      "conectores": 8,
+      "corNome": "Preto"
+    },
+    {
+      "categoria": 2,
+      "comprimento": 8,
+      "largura": 6,
+      "nome": "Base",
+      "conectores": 10,
+      "corNome": "Aqua"
+    },
+    {
+      "categoria": 5,
+      "comprimento": 3,
+      "largura": 1,
+      "nome": "Rosto",
+      "conectores": 4,
+      "corNome": "Vermelho"
+    }
+  ],
+  "legosPequenos": [
+    {
+      "categoria": 3,
+      "comprimento": 12,
+      "largura": 10,
+      "encaixes": "Telha",
+      "conectores": 8,
+      "corNome": "Vermelho escuro"
+    },
+    {
+      "categoria": 4,
+      "comprimento": 8,
+      "largura": 7,
+      "encaixes": "Janela",
+      "conectores": 4,
+      "corNome": "Aqua"
+    }
+  ]
+}

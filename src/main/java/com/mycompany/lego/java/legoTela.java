@@ -52,6 +52,11 @@ public class legoTela extends JFrame {
     private JButton btnGerenciarCores;
     private JLabel lblInfoCategorias;
     
+    // Componentes para pesquisa
+    private JTextField txtPesquisa;
+    private JButton btnPesquisar;
+    private JButton btnLimparPesquisa;
+    
     private NumberFormat formatoNumero;
     private JPanel painelEntrada;
     private GridBagConstraints gbc;
@@ -74,9 +79,9 @@ public class legoTela extends JFrame {
             df.setGroupingUsed(false);
         }
         
-        // Painel principal
+        // Painel principal - Alterando para um BoxLayout vertical para melhor controle do espaço
         JPanel painelPrincipal = new JPanel();
-        painelPrincipal.setLayout(new BorderLayout());
+        painelPrincipal.setLayout(new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
         
         painelEntrada = new JPanel(new GridBagLayout());
         gbc = new GridBagConstraints();
@@ -92,6 +97,14 @@ public class legoTela extends JFrame {
         txtConectores = new JTextField(10);
         txtConectores.setToolTipText("Digite apenas números inteiros positivos");
         txtEncaixes = new JTextField(20);
+        
+        // Inicialização dos componentes de pesquisa
+        txtPesquisa = new JTextField(20);
+        txtPesquisa.setToolTipText("Digite o termo para pesquisar na tabela");
+        btnPesquisar = new JButton("Pesquisar");
+        btnPesquisar.setToolTipText("Clique para filtrar a tabela com o termo digitado");
+        btnLimparPesquisa = new JButton("Limpar");
+        btnLimparPesquisa.setToolTipText("Limpar filtro e mostrar todos os itens");
         
         // Inicialização do seletor de cores
         comboCores = new JComboBox<>(projeto.getNomesCores());
@@ -226,14 +239,27 @@ public class legoTela extends JFrame {
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER));
         painelBotoes.add(btnAdicionar);
         
-        // Montagem final dos painéis
+        // Montagem final dos painéis - Alterado para usar BoxLayout
         JPanel painelCentral = new JPanel(new BorderLayout());
         painelCentral.add(painelGerenciamento, BorderLayout.NORTH);
         painelCentral.add(painelBotoes, BorderLayout.CENTER);
         
-        painelPrincipal.add(painelEntrada, BorderLayout.NORTH);
-        painelPrincipal.add(painelCentral, BorderLayout.CENTER);
-        painelPrincipal.add(scrollTabela, BorderLayout.SOUTH);
+        // Definindo um tamanho mínimo para o painel central para garantir que ele seja exibido
+        painelCentral.setMinimumSize(new Dimension(750, 150));
+        painelCentral.setPreferredSize(new Dimension(750, 150));
+        
+        // Criando um painel para a tabela com tamanho controlado
+        JPanel painelTabela = new JPanel(new BorderLayout());
+        
+        // Configurando a tabela com altura máxima para evitar que sobreponha outros componentes
+        scrollTabela.setPreferredSize(new Dimension(750, 200));
+        scrollTabela.setMaximumSize(new Dimension(Short.MAX_VALUE, 200));
+        painelTabela.add(scrollTabela, BorderLayout.CENTER);
+        
+        // Adicionando os componentes ao painel principal na ordem vertical
+        painelPrincipal.add(painelEntrada);
+        painelPrincipal.add(painelCentral);
+        painelPrincipal.add(painelTabela);
         
         add(painelPrincipal);
         
@@ -313,6 +339,29 @@ public class legoTela extends JFrame {
         gbc.gridx = 1;
         painelEntrada.add(txtConectores, gbc);
         
+        // Pesquisa
+        gridY++;
+        gbc.gridx = 0; gbc.gridy = gridY;
+        painelEntrada.add(new JLabel("Pesquisar:"), gbc);
+        
+        // Painel para campo de pesquisa e botões
+        JPanel painelPesquisa = new JPanel(new BorderLayout(5, 0));
+        painelPesquisa.add(txtPesquisa, BorderLayout.CENTER);
+        
+        // Painel para botões de pesquisa
+        JPanel painelBotoesPesquisa = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        painelBotoesPesquisa.add(btnPesquisar);
+        painelBotoesPesquisa.add(btnLimparPesquisa);
+        
+        gbc.gridx = 1;
+        painelEntrada.add(painelPesquisa, gbc);
+        
+        // Botões de pesquisa
+        gridY++;
+        gbc.gridx = 1;
+        gbc.gridy = gridY;
+        painelEntrada.add(painelBotoesPesquisa, gbc);
+        
         // Revalida o painel para atualizar o layout
         painelEntrada.revalidate();
         painelEntrada.repaint();
@@ -343,6 +392,16 @@ public class legoTela extends JFrame {
                 painelPreviewCor.setToolTipText(nomeCor);
             }
         });
+        
+        // Eventos para os botões de pesquisa
+        btnPesquisar.addActionListener(e -> filtrarGrid(txtPesquisa.getText()));
+        btnLimparPesquisa.addActionListener(e -> {
+            txtPesquisa.setText("");
+            atualizarTabela(); // Mostra todos os itens novamente
+        });
+        
+        // Permitir pesquisa ao pressionar Enter no campo de pesquisa
+        txtPesquisa.addActionListener(e -> filtrarGrid(txtPesquisa.getText()));
     }
     
     private void atualizarCamposEspecificos() {
@@ -665,6 +724,9 @@ public class legoTela extends JFrame {
         // Verifica se há cores ao iniciar a aplicação
         verificarCores();
         
+        // Carrega os dados na tabela
+        atualizarTabela();
+        
         setVisible(true);
     }
     
@@ -736,5 +798,90 @@ public class legoTela extends JFrame {
             }
         }
         return true;
+    }
+    
+    /**
+     * Filtra os legos exibidos na tabela de acordo com o termo de pesquisa
+     * @param termo O termo a ser pesquisado
+     */
+    private void filtrarGrid(String termo) {
+        if (termo == null || termo.trim().isEmpty()) {
+            // Se o termo de pesquisa estiver vazio, mostra todos os legos
+            atualizarTabela();
+            return;
+        }
+        
+        // Converte o termo para minúsculas para busca case-insensitive
+        termo = termo.toLowerCase().trim();
+        
+        modeloTabela.setRowCount(0);
+        if (!projeto.listaVazia()) {
+            for (LegoJava lego : projeto.getListaLegos()) {
+                // Obtém todas as propriedades relevantes do lego para pesquisa
+                String categoriaNome = projeto.getCategoriaNome(lego.getCategoria()).toLowerCase();
+                String corNome = "";
+                String nomeOuEncaixe = "";
+                String tipo = "";
+                
+                // Extrai informações específicas baseado no tipo de lego
+                if (lego instanceof LegoGrande legoGrande) {
+                    corNome = legoGrande.getCorNome().toLowerCase();
+                    nomeOuEncaixe = legoGrande.getNome().toLowerCase();
+                    tipo = "grande";
+                } else if (lego instanceof LegoPequeno legoPequeno) {
+                    corNome = legoPequeno.getCorNome().toLowerCase();
+                    nomeOuEncaixe = legoPequeno.getEncaixes().toLowerCase();
+                    tipo = "pequeno";
+                }
+                
+                // Verifica se o termo de pesquisa está contido em algum dos campos
+                if (categoriaNome.contains(termo) || 
+                    tipo.contains(termo) || 
+                    nomeOuEncaixe.contains(termo) || 
+                    corNome.contains(termo) ||
+                    String.valueOf(lego.getComprimento()).contains(termo) ||
+                    String.valueOf(lego.getLargura()).contains(termo)) {
+                    
+                    // Adiciona o lego à tabela se corresponder ao termo de pesquisa
+                    Object[] linha;
+                    if (lego instanceof LegoGrande legoGrande) {
+                        linha = new Object[]{
+                            categoriaNome,
+                            "Grande",
+                            legoGrande.getNome(),
+                            legoGrande.getCorNome(),
+                            legoGrande.getComprimento(),
+                            legoGrande.getLargura(),
+                            legoGrande.getConectores()
+                        };
+                    } else if (lego instanceof LegoPequeno legoPequeno) {
+                        linha = new Object[]{
+                            categoriaNome,
+                            "Pequeno",
+                            legoPequeno.getEncaixes(),
+                            legoPequeno.getCorNome(),
+                            legoPequeno.getComprimento(),
+                            legoPequeno.getLargura(),
+                            legoPequeno.getConectores()
+                        };
+                    } else {
+                        linha = null;
+                    }
+                    
+                    if (linha != null) {
+                        // Corrige a primeira letra maiúscula em categoria
+                        linha[0] = projeto.getCategoriaNome(lego.getCategoria());
+                        modeloTabela.addRow(linha);
+                    }
+                }
+            }
+        }
+        
+        // Exibe mensagem se nenhum resultado for encontrado
+        if (modeloTabela.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this,
+                "Nenhum Lego encontrado com o termo: " + termo,
+                "Pesquisa", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 }
