@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -208,8 +209,8 @@ public class CoresTela extends JDialog {
      */
     private void carregarCores() {
         modeloLista.clear();
-        // Usando getNomesCores() que retorna os nomes das cores
         String[] nomesCores = projeto.getNomesCores();
+        Arrays.sort(nomesCores); // Ordena os nomes das cores em ordem alfabética
         for (String nomeCor : nomesCores) {
             modeloLista.addElement(nomeCor);
         }

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 /**
  * Classe que gerencia o projeto de Legos e sua persistência
@@ -43,11 +41,11 @@ public class legoProjeto {
     }
     
     public String[] getCategorias() {
-        return categorias.toArray(String[]::new);
+        return categorias.stream().sorted().toArray(String[]::new); // Ordena as categorias
     }
     
     public String[] getNomesCores() {
-        return cores.keySet().toArray(String[]::new);
+        return cores.keySet().stream().sorted().toArray(String[]::new); // Ordena os nomes das cores
     }
     
     public Color[] getCores() {

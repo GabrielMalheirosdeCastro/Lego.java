@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -181,6 +182,7 @@ public class CategoriasTela extends JDialog {
     private void carregarCategorias() {
         modeloLista.clear();
         String[] categorias = projeto.getCategorias();
+        Arrays.sort(categorias); // Ordena as categorias em ordem alfabética
         for (String categoria : categorias) {
             modeloLista.addElement(categoria);
         }
